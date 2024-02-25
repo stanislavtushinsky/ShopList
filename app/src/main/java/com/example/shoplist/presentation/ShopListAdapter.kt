@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.shoplist.R
 import com.example.shoplist.domain.ShopItem
 
-class ShopListAdapter: RecyclerView.Adapter<ShopListViewHolder>() {
+class ShopListAdapter : RecyclerView.Adapter<ShopListViewHolder>() {
 
     var shopList = listOf<ShopItem>()
-        set(value){
+        set(value) {
             val callback = ShopListDiffCallback(shopList, value)
             val diffResult = DiffUtil.calculateDiff(callback)
             diffResult.dispatchUpdatesTo(this)
@@ -22,12 +22,12 @@ class ShopListAdapter: RecyclerView.Adapter<ShopListViewHolder>() {
     var onShopItemLongClickListener: ((ShopItem) -> Unit)? = null
     var onShopItemClickListener: ((ShopItem) -> Unit)? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopListViewHolder {
-        val layout = when(viewType){
+        val layout = when (viewType) {
             VIEW_TYPE_DISABLED -> R.layout.item_shop_disabled
             VIEW_TYPE_ENABLED -> R.layout.item_shop_enabled
             else -> throw RuntimeException("Unknown viewType: $viewType")
         }
-        val item = LayoutInflater.from(parent.context).inflate(layout,parent, false)
+        val item = LayoutInflater.from(parent.context).inflate(layout, parent, false)
         return ShopListViewHolder(item)
         Log.d(TAG, "onCreateViewHolder")
     }
@@ -36,7 +36,7 @@ class ShopListAdapter: RecyclerView.Adapter<ShopListViewHolder>() {
         val shopItem = shopList[position]
         holder.itemName.text = shopItem.name
         holder.itemCount.text = shopItem.count.toString()
-        holder.view.setOnLongClickListener{
+        holder.view.setOnLongClickListener {
             onShopItemLongClickListener?.invoke(shopItem)
             false
         }
@@ -52,14 +52,14 @@ class ShopListAdapter: RecyclerView.Adapter<ShopListViewHolder>() {
 
     override fun getItemViewType(position: Int): Int {
         val item = shopList[position]
-        return if(item.enabled){
+        return if (item.enabled) {
             VIEW_TYPE_ENABLED
         } else {
             VIEW_TYPE_DISABLED
         }
     }
 
-    companion object{
+    companion object {
         const val VIEW_TYPE_ENABLED = 1
         const val VIEW_TYPE_DISABLED = 0
 
