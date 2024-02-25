@@ -3,15 +3,13 @@ package com.example.shoplist.presentation
 import android.content.ContentValues.TAG
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shoplist.R
 import com.example.shoplist.domain.ShopItem
 
-class ShopListAdapter: RecyclerView.Adapter<ShopListAdapter.ShopListViewHolder>() {
+class ShopListAdapter: RecyclerView.Adapter<ShopListViewHolder>() {
 
     var shopList = listOf<ShopItem>()
         set(value){
@@ -59,11 +57,6 @@ class ShopListAdapter: RecyclerView.Adapter<ShopListAdapter.ShopListViewHolder>(
         } else {
             VIEW_TYPE_DISABLED
         }
-    }
-
-    class ShopListViewHolder(val view: View):RecyclerView.ViewHolder(view){
-        var itemName = view.findViewById<TextView>(R.id.tv_name)
-        val itemCount = view.findViewById<TextView>(R.id.tv_count)
     }
 
     companion object{
