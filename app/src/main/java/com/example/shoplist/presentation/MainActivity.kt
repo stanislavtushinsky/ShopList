@@ -8,30 +8,40 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shoplist.R
+import com.example.shoplist.databinding.ActivityMainBinding
+import com.example.shoplist.presentation.ShopItemActivity.Companion.newIntentAdd
+import com.example.shoplist.presentation.ShopItemActivity.Companion.newIntentEdit
 import com.example.shoplist.presentation.ShopListAdapter.Companion.MAX_PULL_SIZE
 import com.example.shoplist.presentation.ShopListAdapter.Companion.VIEW_TYPE_DISABLED
 import com.example.shoplist.presentation.ShopListAdapter.Companion.VIEW_TYPE_ENABLED
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: ShopListAdapter
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         setupRVShopList()
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.shopListLD.observe(this){
+        viewModel.shopListLD.observe(this) {
             adapter.shopList = it
+        }
+        binding.bttnAddShopItem.setOnClickListener {
+            val intent = newIntentAdd(this)
+            startActivity(intent)
         }
     }
 
-    fun setupRVShopList(){
-        val rvShopList =  findViewById<RecyclerView>(R.id.rv_shop_list)
+    fun setupRVShopList() {
+        val rvShopList = findViewById<RecyclerView>(R.id.rv_shop_list)
         adapter = ShopListAdapter()
         rvShopList.adapter = adapter
-        with(rvShopList){
+        with(rvShopList) {
             Log.d(TAG, "setupRVShopList")
             recycledViewPool.setMaxRecycledViews(VIEW_TYPE_ENABLED, MAX_PULL_SIZE)
             recycledViewPool.setMaxRecycledViews(VIEW_TYPE_DISABLED, MAX_PULL_SIZE)
@@ -66,6 +76,8 @@ class MainActivity : ComponentActivity() {
     private fun setupClickListener() {
         adapter.onShopItemClickListener = {
             Log.d(TAG, "it info id: ${it.id} status: ${it.enabled} ")
+            val intent = newIntentEdit(this, it.id)
+            startActivity(intent)
         }
     }
 
@@ -74,12 +86,6 @@ class MainActivity : ComponentActivity() {
             viewModel.changeEnableState(it)
         }
     }
-
-    
-
-
-
-
 
 }
 
