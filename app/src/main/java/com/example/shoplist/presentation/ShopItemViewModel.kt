@@ -1,17 +1,22 @@
 package com.example.shoplist.presentation
 
+import android.app.Application
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.shoplist.data.ShopListRepositoryImpl
 import com.example.shoplist.domain.AddShopItemUseCase
 import com.example.shoplist.domain.EditShopItemUseCase
 import com.example.shoplist.domain.GetShopItemUseCase
 import com.example.shoplist.domain.ShopItem
+import kotlinx.coroutines.launch
 
-class ShopItemViewModel : ViewModel() {
+class ShopItemViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = ShopListRepositoryImpl
+    private val repository = ShopListRepositoryImpl(application)
 
     private val _errorInputName = MutableLiveData<Boolean>()// работаем с этой из VM
     val errorInputName: LiveData<Boolean>  // работаем с этой из Activity
@@ -34,8 +39,11 @@ class ShopItemViewModel : ViewModel() {
     private val addShopItemUseCase = AddShopItemUseCase(repository)
 
     fun getShopItem(shopItemID: Int) {
-        val item = getShopItemUseCase.getShopItem(shopItemID)
-        _shopItemLD.value = item
+        viewModelScope.launch {
+            val item = getShopItemUseCase.getShopItem(shopItemID)
+            _shopItemLD.value = item
+            Log.d(TAG, "getShopItem ShopItemVM from VMScope.launch() ${viewModelScope.coroutineContext} ")
+        }
     }
 
     fun addShopItem(inputName: String?, inputCount: String) {
@@ -43,9 +51,12 @@ class ShopItemViewModel : ViewModel() {
         val count = parseCount(inputCount)
         val validationResult = validateInputTypes(name, count)
         if (validationResult) {
-            val shopItem = ShopItem(name, count, true)
-            addShopItemUseCase.addShopItem(shopItem)
-            _finishCurrentScreenLD.value = Unit
+            viewModelScope.launch {
+                val shopItem = ShopItem(name, count, true)
+                addShopItemUseCase.addShopItem(shopItem)
+                _finishCurrentScreenLD.value = Unit
+                Log.d(TAG, "addShopItem ShopItemVM from VMScope.launch() ${viewModelScope.coroutineContext} ")
+            }
         }
     }
 
@@ -55,9 +66,12 @@ class ShopItemViewModel : ViewModel() {
         val validationResult = validateInputTypes(name, count)
         if (validationResult) {
             _shopItemLD.value?.let {
-                val item = it.copy(name = name, count = count)
-                editShopItemUseCase.editShopItem(item)
-                _finishCurrentScreenLD.value = Unit
+                viewModelScope.launch {
+                    val item = it.copy(name = name, count = count)
+                    editShopItemUseCase.editShopItem(item)
+                    _finishCurrentScreenLD.value = Unit
+                    Log.d(TAG, "editShopItem ShopItemVM from VMScope.launch() ${viewModelScope.coroutineContext} ")
+                }
             }
         }
     }
