@@ -4,89 +4,27 @@ import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.appcompat.app.AppCompatActivity
 import com.example.shoplist.R
-import com.example.shoplist.databinding.ActivityMainBinding
 import com.example.shoplist.databinding.ActivityShopItemBinding
 import com.example.shoplist.domain.ShopItem
 
-class ShopItemActivity : ComponentActivity() {
+class ShopItemActivity : AppCompatActivity() {
     private lateinit var binding: ActivityShopItemBinding
-    private lateinit var viewModel: ShopItemViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityShopItemBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding.shopItemContainer)
         parseIntent()
-        viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
-        addTextChangeListeners()
-        when (screenMode) {
-            MODE_EDIT -> launchEditMode()
-            MODE_ADD -> launchAddMode()
+        val fragment = when (screenMode) {
+            MODE_EDIT -> ShopItemFragment.newInstanceEditItem(shopItemID)
+            MODE_ADD -> ShopItemFragment.newInstanceAddItem()
+            else -> throw RuntimeException("Unknown screen mode $screenMode")
         }
-        viewModel.errorInputCount.observe(this) {
-            val message = if (it) {
-                getString(R.string.error_input_count)
-            } else {
-                null
-            }
-            binding.layoutCount.error = message
-        }
-        viewModel.errorInputName.observe(this) {
-            val message = if (it) {
-                getString(R.string.error_input_name)
-            } else {
-                null
-            }
-            binding.layoutName.error = message
-        }
-        viewModel.finishCurrentScreenLD.observe(this) {
-            finish()
-        }
-    }
-
-    private fun addTextChangeListeners() {
-        binding.editTextName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.resetErrorInputName()
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-        binding.editTextName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.resetErrorInputCount()
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-    }
-
-    private fun launchEditMode() {
-        viewModel.getShopItem(shopItemID)
-        viewModel.shopItemLD.observe(this) {
-            binding.editTextName.setText(it.name)
-            binding.editTextCount.setText(it.count.toString())
-        }
-        binding.buttonSave.setOnClickListener {
-            viewModel.editShopItem(
-                binding.editTextName.text?.toString(),
-                binding.editTextCount.text.toString()
-            )
-        }
-    }
-
-    private fun launchAddMode() {
-        binding.buttonSave.setOnClickListener {
-            viewModel.addShopItem(
-                binding.editTextName.text?.toString(),
-                binding.editTextCount.text.toString()
-            )
-        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.shopItemContainer, fragment)
+            .commit()
     }
 
     private var screenMode = MODE_UNKNOWN

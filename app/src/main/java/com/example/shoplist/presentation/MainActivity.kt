@@ -3,7 +3,8 @@ package com.example.shoplist.presentation
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -14,9 +15,8 @@ import com.example.shoplist.presentation.ShopItemActivity.Companion.newIntentEdi
 import com.example.shoplist.presentation.ShopListAdapter.Companion.MAX_PULL_SIZE
 import com.example.shoplist.presentation.ShopListAdapter.Companion.VIEW_TYPE_DISABLED
 import com.example.shoplist.presentation.ShopListAdapter.Companion.VIEW_TYPE_ENABLED
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var adapter: ShopListAdapter
@@ -32,9 +32,25 @@ class MainActivity : ComponentActivity() {
             adapter.shopList = it
         }
         binding.bttnAddShopItem.setOnClickListener {
-            val intent = newIntentAdd(this)
-            startActivity(intent)
+            if (isOnePaneMode()) {
+                val intent = newIntentAdd(this)
+                startActivity(intent)
+            } else {
+                launchFragment(ShopItemFragment.newInstanceAddItem())
+            }
         }
+    }
+
+    private fun isOnePaneMode(): Boolean {
+        return binding.shopItemContainer == null
+    }
+
+    private fun launchFragment(fragment: Fragment) {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.shop_item_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     fun setupRVShopList() {
@@ -76,8 +92,12 @@ class MainActivity : ComponentActivity() {
     private fun setupClickListener() {
         adapter.onShopItemClickListener = {
             Log.d(TAG, "it info id: ${it.id} status: ${it.enabled} ")
-            val intent = newIntentEdit(this, it.id)
-            startActivity(intent)
+            if (isOnePaneMode()) {
+                val intent = newIntentEdit(this, it.id)
+                startActivity(intent)
+            } else {
+                launchFragment(ShopItemFragment.newInstanceEditItem(it.id))
+            }
         }
     }
 
